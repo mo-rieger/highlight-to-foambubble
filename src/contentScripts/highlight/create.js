@@ -16,8 +16,21 @@ async function create(color, selection = window.getSelection()) {
   }
 
   const highlightIndex = await store(selection, container, location.hostname + location.pathname, location.href, color.color, color.textColor);
-  await commit(selection, location.hostname, location.pathname, ["web"]);
   highlight(selectionString, container, selection, color.color, color.textColor, highlightIndex);
+  await commit(getMarkdown(selection), location.hostname, location.pathname, ["web"]);
+}
+function getMarkdown(sel) {
+  var html = "";
+  if (sel.rangeCount) {
+    var container = document.createElement("div");
+    for (var i = 0, len = sel.rangeCount; i < len; ++i) {
+      container.appendChild(sel.getRangeAt(i).cloneContents());
+    }
+    html = container.innerHTML;
+  }
+  var turndownService = new TurndownService()
+  var markdown = turndownService.turndown(html)
+  return markdown;
 }
 
 export default create;
