@@ -1,6 +1,7 @@
 import highlight from './highlight/index.js';
 
 import { store } from '../utils/storageManager.js';
+import { commit } from '../utils/gitHubManager.js';
 
 async function create(color, selection = window.getSelection()) {
   const selectionString = selection.toString();
@@ -15,6 +16,7 @@ async function create(color, selection = window.getSelection()) {
   }
 
   const highlightIndex = await store(selection, container, location.hostname + location.pathname, location.href, color.color, color.textColor);
+  await commit(selection, location.hostname, location.pathname, ["web"]);
   highlight(selectionString, container, selection, color.color, color.textColor, highlightIndex);
 }
 

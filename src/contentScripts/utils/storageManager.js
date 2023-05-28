@@ -26,7 +26,6 @@ async function store(selection, container, url, href, color, textColor) {
         createdAt: Date.now(),
     });
     chrome.storage.local.set({ highlights });
-
     // Return the index of the new highlight:
     return count - 1 + alternativeUrlIndexOffset;
 }
