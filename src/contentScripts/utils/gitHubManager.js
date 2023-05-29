@@ -10,6 +10,13 @@ const repo = 'foambubble-highlights';
 const branch = 'master';
 
 async function commit(selection, host, path, tags) {
+    // use host as tag if no tags are provided
+    if (tags.length === 0) {
+        let hostPortions = host.split('.');
+        if (hostPortions.length > 1) {
+            tags.push(hostPortions[1])
+        }
+    }
 
     let pathPortions = path.split('/');
     let topic = pathPortions[pathPortions.length - 1]

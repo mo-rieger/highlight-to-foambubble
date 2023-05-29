@@ -17,7 +17,8 @@ async function create(color, selection = window.getSelection()) {
 
   const highlightIndex = await store(selection, container, location.hostname + location.pathname, location.href, color.color, color.textColor);
   highlight(selectionString, container, selection, color.color, color.textColor, highlightIndex);
-  await commit(getMarkdown(selection), location.hostname, location.pathname, ["web"]);
+  // TODO: implement tags from popup
+  await commit(getMarkdown(selection), location.hostname, location.pathname, []);
 }
 function getMarkdown(sel) {
   var html = "";
