@@ -22,9 +22,11 @@ function initializeHoverTools() {
         copyBtnEl = hoverToolEl.find('.highlighter--icon-copy')[0];
         deleteBtnEl = hoverToolEl.find('.highlighter--icon-delete')[0];
         changeColorBtnEl = hoverToolEl.find('.highlighter--icon-change-color')[0];
+        tagsEl = hoverToolEl.find('#highlighter--tags')[0];
         copyBtnEl.addEventListener('click', onCopyBtnClicked);
         deleteBtnEl.addEventListener('click', onDeleteBtnClicked);
         changeColorBtnEl.addEventListener('click', onChangeColorBtnClicked);
+        tagsEl.addEventListener('blur', onTagsBlurred);
     });
 
     // Allow clicking outside of a highlight to unselect
@@ -163,6 +165,9 @@ function onChangeColorBtnClicked() {
     updateHighlightColor(highlightId);
     chrome.runtime.sendMessage({ action: 'track-event', trackCategory: 'highlight-action', trackAction: 'change-color' });
 }
+
+function onTagsBlurred(e) {
+    const highlightId = currentHighlightEl.getAttribute('data-highlight-id');
 
 export {
     initializeHoverTools,
