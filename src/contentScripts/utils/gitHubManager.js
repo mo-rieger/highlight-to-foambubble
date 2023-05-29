@@ -9,22 +9,20 @@ const owner = 'mo-rieger';
 const repo = 'foambubble-highlights';
 const branch = 'master';
 
-async function commit(selection, host, path, tags) {
-    // use host as tag if no tags are provided
+async function commit(markdownContent, host, path, tags) {
+    // use hostname as tag if no tags are provided
     if (tags.length === 0) {
-        let hostPortions = host.split('.');
-        if (hostPortions.length > 1) {
-            tags.push(hostPortions[1])
-        }
+        tags = host.split('.');
+        tags.pop()
     }
 
     let pathPortions = path.split('/');
-    let topic = pathPortions[pathPortions.length - 1]
+    let topic = pathPortions.findLast((portion) => portion !== '');
     const filePath = `web/${host}/${topic}.md`;
     // Check if the file exists
     const fileEndpoint = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
     let existingContent = '';
-    let appendContent = `#${tags.join(" #")}\n${selection.toString()}`;
+    const href = `https://${host}${path}`
 
     fetch(fileEndpoint, { headers })
         .then((response) => {
@@ -37,7 +35,7 @@ async function commit(selection, host, path, tags) {
             existingContent = atob(fileData.content);
 
     // Append new content to the existing content or create new content if the file doesn't exist
-            const newContent = existingContent + `\n\n${appendContent}`;
+            const newContent = existingContent + `\n\n${markdownContent}`;
 
     // Encode the updated content to Base64
             const encodedContent = btoa(newContent);
@@ -49,7 +47,7 @@ async function commit(selection, host, path, tags) {
                 method: 'PUT',
                 headers: headers,
                 body: JSON.stringify({
-                    message: 'Append content to file',
+                    message: `Append highlight to ${href}`,
                     content: encodedContent,
                     branch: branch,
                     sha: fileData.sha,
@@ -59,14 +57,15 @@ async function commit(selection, host, path, tags) {
         .catch((error) => {
             if (error.message === 'Error occurred while checking file existence') {
                 // File doesn't exist, create a new file with the appended content
-                const newContent = `# [${topic}](${host}/${path})\n\n${appendContent}`;
+                const header = `---\ntype: web\ntags: ${tags.join(' ')}\n---\n\n`;
+                const newContent = `${header}# [${topic}](${href})\n\n${markdownContent}`;
 
                 // Encode the new content to Base64
                 const encodedContent = btoa(newContent);
 
                 const createFileEndpoint = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
                 const payload = {
-                    message: 'Create new file',
+                    message: `Create new highlight for ${href}`,
                     content: encodedContent,
                     branch: branch,
                 };
