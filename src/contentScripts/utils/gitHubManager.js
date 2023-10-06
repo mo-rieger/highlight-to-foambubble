@@ -32,14 +32,8 @@ async function commit(markdownContent, host, path, tags) {
             throw new Error('Error occurred while checking file existence');
         })
         .then((fileData) => {
-            existingContent = atob(fileData.content);
-
-    // Append new content to the existing content or create new content if the file doesn't exist
-            const newContent = existingContent + `\n\n${markdownContent}`;
-
-    // Encode the updated content to Base64
-            const encodedContent = btoa(newContent);
-
+            // Append new content to the existing content or create new content if the file doesn't exist
+            const newContent = decodeBase64(fileData.content) + `\n\n${markdownContent}`;
             // Update the existing file with the appended content
             const updateFileEndpoint = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
 
@@ -48,7 +42,7 @@ async function commit(markdownContent, host, path, tags) {
                 headers: headers,
                 body: JSON.stringify({
                     message: `Append highlight to ${href}`,
-                    content: encodedContent,
+                    content: encodeBase64(newContent),
                     branch: branch,
                     sha: fileData.sha,
                 }),
@@ -61,7 +55,7 @@ async function commit(markdownContent, host, path, tags) {
                 const newContent = `${header}# [${topic}](${href})\n\n${markdownContent}`;
 
                 // Encode the new content to Base64
-                const encodedContent = btoa(newContent);
+                const encodedContent = encodeBase64(newContent);
 
                 const createFileEndpoint = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
                 const payload = {
@@ -92,6 +86,17 @@ async function commit(markdownContent, host, path, tags) {
         .catch((error) => {
             console.error('Error:', error.message);
         });
+}
+
+function encodeBase64(content) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(content);
+    return btoa(String.fromCharCode(...new Uint8Array(data)));
+}
+
+function decodeBase64(content) {
+    const decoder = new TextDecoder();
+    return decoder.decode(new Uint8Array(atob(content).split('').map((c) => c.charCodeAt(0))));
 }
 
 export { commit }
